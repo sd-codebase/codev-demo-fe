@@ -2,18 +2,18 @@ import { Button, Layout, Space } from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, Link, useNavigate } from "react-router-dom";
+import { API } from "../constants/api.constants";
 import { setAuth } from "../redux/actions";
-import { ActionTypes } from "../redux/actionTypes";
 const { Header, Content } = Layout;
 
 const LayoutContainer = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const {auth} = useSelector((state: any) => state.auth);
+  const auth = useSelector((state: any) => state.auth);
   const dispach = useDispatch();
 
   useEffect(() => {
-    setIsLoggedIn(auth?.payload?.isAuthenticated)
+    setIsLoggedIn(auth?.isAuthenticated)
 }, [auth]);
 
   const commonStyle: React.CSSProperties = {
@@ -21,10 +21,17 @@ const LayoutContainer = () => {
     padding: '0 3rem',
   };
 
-  const handleLogOut = () => {
-    dispach(dispach(setAuth({type: ActionTypes.SetAuth, payload: {isAuthenticated: false}})))
+  const handleLogOut = async () => {
+    await logOutUser(auth.token);
+    dispach(dispach(setAuth({isAuthenticated: false, token: null, fullname: '', email: null})));
     navigate('/sign-in');
   }
+
+  async function logOutUser(token: string) {
+    const result = await fetch(`${API.HOST}/logout?token=${token}`, {method: 'DELETE'});
+    const {data} = await result.json() as any;
+    return data;
+}
   return (
     <Space direction="vertical" style={{ width: '100%' }} size={[0, 48]}>
         <Layout>
