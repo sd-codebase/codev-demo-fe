@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Modal, Typography } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { API } from '../constants/api.constants';
+import { IUserState } from '../models/user.model';
+import { IStatus, IAuthor, IQuote } from '../models/profile.model';
 const { Title } = Typography;
 
 
-const UpdateProfile = (props: any) => {
-    const {handleModalClosed} = props;
-    const auth = useSelector((state: any) => state.auth);
-    const dispatch = useDispatch();
+const UpdateProfile = ({handleModalClosed}: IUpdateProfileProps) => {
+    const auth = useSelector((state: IUserState) => state.auth);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [status, updateStatus] = useState({} as IStatus);
-    const [author, setAuthor] = useState({} as any);
-    const [quote, setQuote] = useState({} as any);
+    const [author, setAuthor] = useState({} as IAuthor);
+    const [quote, setQuote] = useState({} as IQuote);
     const [controller, setController] = useState(new AbortController());
 
     useEffect(() => {
         setController(new AbortController());
         updateStatus({} as IStatus);
-        setAuthor({});
-        setQuote({});
+        setAuthor({}  as IAuthor);
+        setQuote({} as IQuote);
     }, [handleModalClosed]);
 
     const showModal = () => {
@@ -30,14 +30,14 @@ const UpdateProfile = (props: any) => {
     async function startAsyncOperations() {
         updateStatus({...status, isInProgress: true, currentTask: 'author'});
         const authorResult = await fetch(`${API.HOST}/author?token=${auth.token}`, { signal: controller.signal });
-        var {success, data} = await authorResult.json() as any;
-        if (success) {
+        let {success: isSuccess, data: result} = await authorResult.json();
+        if (isSuccess) {
             updateStatus({...status, isInProgress: true, authorTask: 'Completed', currentTask: 'the quote'});
-            setAuthor(data);
+            setAuthor(result);
         }
     
-        const quoteResult = await fetch(`${API.HOST}/quote?token=${auth.token}&authorId=${data.authorId}`, { signal: controller.signal });
-        var {success, data} = await quoteResult.json() as any;
+        const quoteResult = await fetch(`${API.HOST}/quote?token=${auth.token}&authorId=${result.authorId}`, { signal: controller.signal });
+        let {success, data} = await quoteResult.json();
         if (success) {
             updateStatus({...status, isInProgress: false, authorTask: 'Completed', quoteTask: 'Completed', currentTask: 'finished'});
             setQuote(data);
@@ -46,13 +46,13 @@ const UpdateProfile = (props: any) => {
   
     const handleOk = () => {
         setIsModalOpen(false);
-        handleModalClosed({result: `Author: ${author.name} Quote: ${quote.quote}`});
+        handleModalClosed(`Author: ${author.name} Quote: ${quote.quote}`);
     };
   
     const handleCancel = () => {
         controller.abort();
         setIsModalOpen(false);
-        handleModalClosed({result: "Request cancelled"})
+        handleModalClosed("Request cancelled")
     };
   
     return (
@@ -82,9 +82,6 @@ const UpdateProfile = (props: any) => {
 
 export default UpdateProfile;
 
-interface IStatus {
-    currentTask: string,
-    authorTask: string,
-    quoteTask: string,
-    isInProgress: boolean,
+interface IUpdateProfileProps {
+    handleModalClosed: (str: string) => void
 }

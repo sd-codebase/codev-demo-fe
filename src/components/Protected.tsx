@@ -1,9 +1,7 @@
-import { Button } from 'antd'
 import React, { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
-const Protected = (props: any) => {
-    const {Component} = props;
+const Protected = ({Component}: IProtectedProps) => {
     const navigate = useNavigate();
     const isLoggedIn = true;
 
@@ -18,3 +16,7 @@ const Protected = (props: any) => {
 }
 
 export default Protected
+
+interface IProtectedProps {
+  Component: React.FC
+}

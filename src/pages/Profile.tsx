@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { Avatar, Layout, Button, Modal } from 'antd';
+import { Avatar, Layout } from 'antd';
 import { AntDesignOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import UpdateProfile from '../components/UpdateProfile';
@@ -8,17 +8,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../constants/api.constants';
 import { setAuth } from '../redux/actions';
+import { IUserDetails, IUserState } from '../models/user.model';
 
 const { Title } = Typography;
 const { Footer, Sider, Content } = Layout;
 
 const Profile = () => {
     useDocumentTitle('Profile');
-    const auth = useSelector((state: any) => state.auth);
+    const auth = useSelector((state: IUserState) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [user, setUser] = useState({fullname: '', email: ''});
-    const [resultFromModal, setResultFromModal] = useState({result: ''});
+    const [user, setUser] = useState({} as IUserDetails);
+    const [resultFromModal, setResultFromModal] = useState('');
 
     useEffect(() => {
         if (!auth || !auth?.isAuthenticated) {
@@ -36,7 +37,7 @@ const Profile = () => {
 
     async function getUserProfile(token: string) {
         const result = await fetch(`${API.HOST}/profile?token=${token}`);
-        const {data} = await result.json() as any;
+        const {data} = await result.json();
         return data;
     }
 
@@ -55,11 +56,11 @@ const Profile = () => {
                     </Sider>
                     <Content style={commonStyle}>
                         <Title level={2}>Welcome {user.fullname}</Title>
-                        <UpdateProfile handleModalClosed={(result: any) => setResultFromModal(result)}/>
+                        <UpdateProfile handleModalClosed={(result: string) => setResultFromModal(result)}/>
                     </Content>
                 </Layout>
                 <Footer style={commonStyle}>
-                    {resultFromModal.result}
+                    {resultFromModal}
                 </Footer>
             </Layout>
         </>
