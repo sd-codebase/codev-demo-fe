@@ -1,1 +1,1 @@
-export const useDocumentTitle = (pageTitle) => document.title = pageTitle; 
+export const useDocumentTitle = (pageTitle: string) => document.title = pageTitle; 

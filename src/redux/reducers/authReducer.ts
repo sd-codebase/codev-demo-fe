@@ -1,16 +1,12 @@
 import { ActionTypes } from "../actionTypes";
 
-const initialState = {
-    auth: {
-      isAutheticated: false,
-    }
-};
+const initialState = {};
 
 export const authReducer = (state = initialState, action: any) => {
     const {type, payload} = action;
     switch (type) {
       case ActionTypes.SetAuth:
-        return {...state, auth:{...payload}};
+        return {...state, ...payload};
       default:
         return state;
     }

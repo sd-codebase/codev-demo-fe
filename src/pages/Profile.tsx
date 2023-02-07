@@ -4,24 +4,41 @@ import { Avatar, Layout, Button, Modal } from 'antd';
 import { AntDesignOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 import UpdateProfile from '../components/UpdateProfile';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { API } from '../constants/api.constants';
+import { setAuth } from '../redux/actions';
 
 const { Title } = Typography;
 const { Footer, Sider, Content } = Layout;
 
 const Profile = () => {
     useDocumentTitle('Profile');
-    const {auth} = useSelector((state: any) => state.auth);
+    const auth = useSelector((state: any) => state.auth);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [user, setUser] = useState({fullname: 'Alexey Kornilov', email: 'alexey@klaim.ai'});
+    const [user, setUser] = useState({fullname: '', email: ''});
     const [resultFromModal, setResultFromModal] = useState({result: ''});
 
     useEffect(() => {
-        if (!auth || !auth?.payload?.isAuthenticated) {
+        if (!auth || !auth?.isAuthenticated) {
             navigate('/sign-in');
+        } else {
+            fetchUserProfile(auth.token);
         }
     }, []);
+
+    async function fetchUserProfile(token: string) {
+        const userData = await getUserProfile(token);
+        dispatch(setAuth({...auth, ...userData}));
+        setUser(userData);
+    }
+
+    async function getUserProfile(token: string) {
+        const result = await fetch(`${API.HOST}/profile?token=${token}`);
+        const {data} = await result.json() as any;
+        return data;
+    }
 
     const commonStyle = {
         background: '#fff',

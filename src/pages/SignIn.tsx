@@ -5,24 +5,39 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setAuth } from '../redux/actions';
 import { ActionTypes } from '../redux/actionTypes';
 import { useNavigate } from 'react-router-dom';
+import { API } from '../constants/api.constants';
 
 const SignIn = () => {
     useDocumentTitle('Sign In');
-    const {auth} = useSelector((state: any) => state.auth);
+    const auth = useSelector((state: any) => state.auth);
     const dispach = useDispatch();
     const navigate = useNavigate();
     const [form] = Form.useForm();
 
     useEffect(() => {
-        if (auth && auth?.payload?.isAuthenticated) {
+        if (auth && auth?.isAuthenticated) {
             navigate('/profile');
         }
     }, [auth]);
 
-    const onFinish = (values: any) => {
-        console.log(values);
-        dispach(setAuth({type: ActionTypes.SetAuth, payload: {...values, isAuthenticated: true}}))
+    const onFinish = async (values: any) => {
+        const userData = await signInUser(values);
+        if (userData && userData.token) {
+            dispach(setAuth({isAuthenticated: true, token: userData.token}))
+        }
     };
+
+    async function signInUser(credentials: any) {
+        const result = await fetch(`${API.HOST}/login`, 
+        {method: 'POST', body: JSON.stringify(credentials), 
+            headers: {
+                Accept: 'application.json',
+                'Content-Type': 'application/json'
+            }
+        });
+        const {data} = await result.json() as any;
+        return data;
+    }
     
     return (
         <>
